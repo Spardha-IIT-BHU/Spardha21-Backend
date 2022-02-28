@@ -31,15 +31,19 @@ Windows:
 ```bash
 pip install -r requirements.txt
 ```
-3. Apply migrations: 
+4. Move to main folder: 
+```bash
+cd Spardha
+```
+5. Apply migrations: 
 ```bash
 python manage.py migrate
 ```
-5. Collect static files : 
+6. Collect static files : 
 ```bash
 python manage.py collectstatic
 ```
-6. Start the development server: 
+7. Start the development server: 
 ```bash
 python manage.py runserver
 ```
