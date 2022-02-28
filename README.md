@@ -21,7 +21,7 @@ python -m venv venv
 
 Linux:
 ```bash
-source venv/bin/activate `linux`
+source venv/bin/activate
 ```
 Windows:
 ```cmd
