@@ -28,7 +28,7 @@ def user_data():
                 "name": user.name,
                 "player": ("Captain" if user.is_captain else "Player"),
                 "institution_name": user.team.college_rep.institution_name,
-                "game": user.team.game.gameName,
+                "game": user.team.game.name,
                 "members": user.team.num_of_players,
             }
         )
@@ -41,7 +41,7 @@ def game_data():
         games.append(
             {
                 "id": game.id,
-                "name": game.gameName,
+                "name": game.name,
             }
         )
     return games
@@ -78,14 +78,14 @@ def user_export(request, id):
             ["Name", user.name],
             ["Role", ("Captain" if user.is_captain else "Player")],
             ["Institution Name", user.team.college_rep.institution_name],
-            ["Game", user.team.game.gameName],
+            ["Game", user.team.game.name],
             ["Total Members", user.team.num_of_players],
         ]
         group = Player.objects.filter(name=user.name)
         data.append([])
         data.append(["All Games", "Players"])
         for object in group:
-            data.append([object.team.game.gameName, object.team.num_of_players])
+            data.append([object.team.game.name, object.team.num_of_players])
 
         return table_to_response(user.name.replace(" ", ""), data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
@@ -103,7 +103,7 @@ def game_export(request, id):
             for player in Player.objects.filter(team=team, is_captain=False):
                 arr.append(player.name)
             data.append(arr)
-        return table_to_response(game.gameName.replace(" ", ""), data)
+        return table_to_response(game.name.replace(" ", ""), data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 
 
@@ -116,7 +116,7 @@ def all_export(request):
                     player.name,
                     ("Captain" if player.is_captain else "Player"),
                     player.team.college_rep.institution_name,
-                    player.team.game.gameName,
+                    player.team.game.name,
                     player.team.num_of_players,
                 ]
             )
