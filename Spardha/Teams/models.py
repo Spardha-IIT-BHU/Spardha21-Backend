@@ -3,7 +3,7 @@ from Authentication.models import UserAccount
 
 
 class Game(models.Model):
-    gameName = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=20, unique=True)
     min_players = models.IntegerField()
     max_players = models.IntegerField()
 
