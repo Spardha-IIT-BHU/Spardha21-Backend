@@ -21,6 +21,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("Authentication.urls")),
+    path("teams/", include("Teams.urls")),
     path("manager/", include("Manager.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
@@ -39,6 +40,11 @@ if settings.DEBUG:
         ),
         path(
             "user/",
+            schema_view.with_ui("swagger", cache_timeout=0),
+            name="schema-swagger-ui",
+        ),
+        path(
+            "teams/",
             schema_view.with_ui("swagger", cache_timeout=0),
             name="schema-swagger-ui",
         ),
