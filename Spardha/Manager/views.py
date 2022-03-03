@@ -5,19 +5,6 @@ from Teams.models import Game, Team, Player
 import csv
 
 # Create your views here.
-def create_user():
-    for i in range(100):
-        UserAccount.objects.create(
-            username="Username" + str(i),
-            name="User" + str(i),
-            email="user" + str(i) + "@gmail.com",
-            phone_no="9876543210",
-            designation="Software Engineer",
-            institution_name="IIT BHU",
-            is_active=True,
-        )
-
-
 def user_data():
     users = []
 
@@ -61,7 +48,7 @@ def show_home(request):
 def table_to_response(name, table):
     response = HttpResponse(
         content_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename='" + name + ".csv'"},
+        headers={"Content-Disposition": "attachment; filename=" + name + ".csv"},
     )
 
     writer = csv.writer(response)
@@ -99,7 +86,10 @@ def game_export(request, id):
             data[0].append("Player " + str(i))
         for team in Team.objects.filter(game=game):
             arr = [team.college_rep.institution_name, team.num_of_players]
-            arr.append(Player.objects.get(team=team, is_captain=True).name)
+            try:
+                arr.append(Player.objects.get(team=team, is_captain=True).name)
+            except:
+                arr.append("No Captain")
             for player in Player.objects.filter(team=team, is_captain=False):
                 arr.append(player.name)
             data.append(arr)
