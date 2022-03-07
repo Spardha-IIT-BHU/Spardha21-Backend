@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+import django_heroku
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-86qk#fplrgzvaj&o0nhbgf@^tx)gcg7+9d7#f#%hwsim1p+3ez"
+DEBUG = int(os.environ.get("DEBUG", "1"))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if DEBUG:
+    SECRET_KEY = "django-insecure-86qk#fplrgzvaj&o0nhbgf@^tx)gcg7+9d7#f#%hwsim1p+3ez"
+else:
+    SECRET_KEY = config("SECRET_KEY")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["spardha21.herokuapp.com", "127.0.0.1"]
 
 
 # Application definition
@@ -130,7 +133,7 @@ SWAGGER_SETTINGS = {
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
@@ -159,3 +162,6 @@ BASE_URL_FRONTEND = os.environ.get("BASE_URL_FRONTEND")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())
