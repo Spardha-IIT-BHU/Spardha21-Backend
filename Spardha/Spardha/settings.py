@@ -28,7 +28,7 @@ if DEBUG:
 else:
     SECRET_KEY = config("SECRET_KEY")
 
-ALLOWED_HOSTS = ["spardha21.herokuapp.com", "127.0.0.1"]
+ALLOWED_HOSTS = ["api.spardha.co.in", "spardha21.herokuapp.com", "127.0.0.1"]
 
 
 # Application definition
