@@ -5,7 +5,7 @@ from .views import (
     NewPasswordView,
     RegisterView,
 )
-from .views import ActivateAccount, LoginView, LogoutView, UserUpdateView
+from .views import ActivateAccount, LoginView, LogoutView, UserUpdateView, ResendLinkView
 
 """
 TODO:
@@ -18,6 +18,7 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
     path("update/", UserUpdateView.as_view(), name="update"),
+    path("verify/", ResendLinkView.as_view(), name="verify"),
     path(
         "activate/<uidb64>/<token>/",
         ActivateAccount,

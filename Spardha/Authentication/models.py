@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Group
 
 
 class AccountManager(BaseUserManager):
@@ -40,6 +40,7 @@ class UserAccount(AbstractBaseUser):
     institution_name = models.CharField(max_length=200, blank=False, null=False)
     designation = models.CharField(max_length=100, blank=False, null=False)
     phone_no = models.CharField(max_length=10, blank=False, null=False)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE ,blank=True, null=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
