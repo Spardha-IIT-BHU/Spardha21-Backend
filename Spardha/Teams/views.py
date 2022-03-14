@@ -1,10 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import Game, Team, Player
+from .models import Game, Team, Player, Contingent
 from .serializers import (
     GameSerializer,
     TeamSerializer,
     PlayerSerializer,
+    ContingentSerializer,
 )
 from Authentication.models import UserAccount
 
@@ -20,7 +21,7 @@ class AllGamesView(generics.ListAPIView):
             id = 'G'
         else:  # Mixed
             id = 'M'
-        print(id)
+        # print(id)
         game = Game.objects.filter(game_type=id)
         serializer = self.get_serializer(game, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -54,7 +55,7 @@ class AllTeamsView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request):
-        print(request.user)
+        # print(request.user)
         teams = Team.objects.filter(college_rep=request.user)
         serializer = self.get_serializer(teams, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -79,4 +80,21 @@ class getDetailView(generics.ListAPIView):
         team = Team.objects.filter(id=id).first()
         players = Player.objects.filter(team=team)
         serializer = self.get_serializer(players, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ContingentDetailView(generics.GenericAPIView):
+    serializer_class = ContingentSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        # print(request.user)
+        contingent = Contingent.objects.filter(college_rep=request.user)
+        serializer = self.get_serializer(contingent.last())
         return Response(serializer.data, status=status.HTTP_200_OK)
