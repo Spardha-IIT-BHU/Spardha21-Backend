@@ -1,3 +1,4 @@
+from django import http
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Game, Team, Player, Contingent
@@ -96,5 +97,14 @@ class ContingentDetailView(generics.GenericAPIView):
     def get(self, request):
         # print(request.user)
         contingent = Contingent.objects.filter(college_rep=request.user)
-        serializer = self.get_serializer(contingent.last())
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if contingent.exists():
+            serializer = self.get_serializer(contingent.last())
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request):
+        contingent = Contingent.objects.filter(college_rep=request.user)
+        if contingent:
+            contingent.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
