@@ -189,7 +189,27 @@ class UserUpdateView(generics.GenericAPIView):
             return Response(
                 {"error": "An error occurred!"}, status=status.HTTP_403_FORBIDDEN
             )
-
+def send_verification_mail(user,request):
+    uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+    token = PasswordResetTokenGenerator().make_token(user)
+    current_site = get_current_site(request=request).domain
+    relativeLink = reverse(
+        "activate-account", kwargs={"uidb64": uidb64, "token": token}
+    )
+    absurl = "http://" + current_site + relativeLink
+    email_body = f"""<h2> Spardha'22 </h2>
+         <br> <strong> Hello {user.name}! </strong>
+         <br> Thanks for registering on Spardha <br>
+         To complete your sign up, we just need to verify your email address.<br>
+         Click the link below to verify: <br> <a href='{absurl}'>Verify</a> <br>
+         <br> If you have any questions, please contact us at 
+         <a href='mailto:spardha@gmail.com'>spardha@gmail.com</a>"""
+    data = {
+        "email_body": email_body,
+        "to_mail": [user.email],
+        "email_subject": "Activate Your Spardha Account",
+    }
+    Util.send_email(data)
 
 class RegisterView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
@@ -202,26 +222,7 @@ class RegisterView(generics.GenericAPIView):
             if user is None:
                 user = serializer.save()
                 create_auth_token(user=user)
-                uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-                token = PasswordResetTokenGenerator().make_token(user)
-                current_site = get_current_site(request=request).domain
-                relativeLink = reverse(
-                    "activate-account", kwargs={"uidb64": uidb64, "token": token}
-                )
-                absurl = "http://" + current_site + relativeLink
-                email_body = f"""<h2> Spardha'22 </h2>
-                     <br> <strong> Hello {user.name}! </strong>
-                     <br> Thanks for registering on Spardha <br>
-                     To complete your sign up, we just need to verify your email address.<br>
-                     Click the link below to verify: <br> <a href='{absurl}'>Verify</a> <br>
-                     <br> If you have any questions, please contact us at 
-                     <a href='mailto:spardha@gmail.com'>spardha@gmail.com</a>"""
-                data = {
-                    "email_body": email_body,
-                    "to_mail": [user.email],
-                    "email_subject": "Activate Your Spardha Account",
-                }
-                Util.send_email(data)
+                send_verification_mail(user,request)
                 return Response(
                     {"success": "Verification link has been sent by email!"},
                     status=status.HTTP_200_OK,
@@ -247,3 +248,25 @@ def ActivateAccount(request, uidb64, token):
     user.is_active = True
     user.save()
     return redirect(url)
+
+class ResendLinkView(generics.GenericAPIView):
+    queryset = UserAccount.objects.all()
+    serializer_class = ResetPasswordEmailSerializer
+
+    def post(self, request):
+        try:
+            user = self.queryset.get(email=request.data["email"])
+            if user.is_active:
+                return Response(
+                    {"success": "Account already activated"},
+                    status=status.HTTP_200_OK,
+                )
+            send_verification_mail(user,request)
+            return Response(
+                {"success": "Verification link has been sent on email!"},
+                status=status.HTTP_200_OK,
+            )
+        except UserAccount.DoesNotExist:
+            return Response(
+                {"error": "Account with this mail is not registered!"}, status=status.HTTP_403_FORBIDDEN
+            )

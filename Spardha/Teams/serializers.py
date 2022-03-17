@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Game, Team, Player
+from .models import Game, Team, Player, Contingent
 from Authentication.models import UserAccount
 
 
@@ -13,13 +13,11 @@ class TeamSerializer(serializers.ModelSerializer):
     college_rep = serializers.EmailField()
     game = serializers.CharField()
     num_of_players = serializers.IntegerField()
-    # game_type = serializers.CharField()
 
     def save(self, **kwargs):
         data = self.validated_data
         game = data["game"].split("_")
         name = game[0]
-        print(name)
         game_type = game[1]
         game = Game.objects.get(name=name, game_type=game_type)
         college_rep = UserAccount.objects.get(email=data["college_rep"])
@@ -66,3 +64,32 @@ class PlayerSerializer(serializers.ModelSerializer):
             "team_id",
             "is_captain",
         ]
+
+
+class ContingentSerializer(serializers.ModelSerializer):
+    college_rep = serializers.EmailField()
+    num_of_boys = serializers.IntegerField()
+    num_of_girls = serializers.IntegerField()
+    leader_name = serializers.CharField()
+    leader_contact_num = serializers.CharField()
+
+    def save(self, **kwargs):
+        data = self.validated_data
+        college_rep = UserAccount.objects.get(email=data["college_rep"])
+        num_of_boys = data["num_of_boys"]
+        num_of_girls = data["num_of_girls"]
+        leader_name = data['leader_name']
+        leader_contact_num = data["leader_contact_num"]
+
+        contingent = Contingent.objects.create(
+            college_rep=college_rep,
+            num_of_boys=num_of_boys,
+            num_of_girls=num_of_girls,
+            leader_name=leader_name,
+            leader_contact_num=leader_contact_num,
+        )
+        return contingent
+
+    class Meta:
+        model = Contingent
+        fields = "__all__"
