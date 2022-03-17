@@ -261,6 +261,11 @@ class ResendLinkView(generics.GenericAPIView):
                     {"success": "Account already activated"},
                     status=status.HTTP_200_OK,
                 )
+            elif user.is_deleted:
+                return Response(
+                    {"error": "Account is deleted"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             send_verification_mail(user,request)
             return Response(
                 {"success": "Verification link has been sent on email!"},

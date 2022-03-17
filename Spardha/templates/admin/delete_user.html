@@ -1,0 +1,8 @@
+{% extends 'admin/change_form.html' %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    <div class="submit-row">
+            <input style="background-color: orange; color:black" type="submit" value="Mark deleted" name="_delete_user">
+    </div>
+{% endblock %}
