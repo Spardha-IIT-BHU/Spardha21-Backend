@@ -36,6 +36,7 @@ class UserAccount(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     name = models.CharField(max_length=100)
     institution_name = models.CharField(max_length=200, blank=False, null=False)
     designation = models.CharField(max_length=100, blank=False, null=False)
