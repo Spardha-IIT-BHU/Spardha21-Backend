@@ -38,8 +38,11 @@ class TeamCreateView(generics.GenericAPIView):
         serializer.save()
         college_rep = UserAccount.objects.filter(
             email=serializer.data["college_rep"])
-        game = Game.objects.filter(name=serializer.data["game"].split(
-            "_")[0], game_type=serializer.data["game"].split("_")[1])
+        try:
+            game = Game.objects.filter(name=serializer.data["game"].split(
+                "_")[0], game_type=serializer.data["game"].split("_")[1])
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         team = Team.objects.filter(college_rep=college_rep.last(),
                                    game=game.last()).first()
         response_data = {
