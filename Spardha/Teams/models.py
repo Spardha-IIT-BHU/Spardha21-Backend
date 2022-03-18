@@ -40,6 +40,10 @@ class Contingent(models.Model):
     )
     num_of_boys = models.IntegerField()
     num_of_girls = models.IntegerField()
+    num_of_officials = models.IntegerField()
     leader_name = models.CharField(max_length=50)
     leader_contact_num = models.CharField(
         max_length=10, validators=[MinLengthValidator(10)])
+
+    def __str__(self):
+        return self.college_rep.institution_name

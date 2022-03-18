@@ -68,7 +68,7 @@ class TeamCreateView(generics.GenericAPIView):
         game = Game.objects.filter(name=serializer.data["game"].split(
             "_")[0], game_type=serializer.data["game"].split("_")[1])
         team = Team.objects.filter(college_rep=college_rep.last(),
-                                   game=game.last()).first()
+                                   game=game.last()).last()
         response_data = {
             "id": team.id,
             "college_rep": team.college_rep.email,
@@ -157,7 +157,7 @@ class getDetailView(generics.ListAPIView):
         }
     )
     def get(self, request, id):
-        team = Team.objects.filter(id=id).first()
+        team = Team.objects.filter(id=id).last()
         if(team.exists()):
             players = Player.objects.filter(team=team)
             serializer = self.get_serializer(players, many=True)
@@ -176,6 +176,7 @@ class ContingentDetailView(generics.GenericAPIView):
                 "college_rep": college_rep.email,
                 "num_of_boys": integer,
                 "num_of_girls": integer,
+                "num_of_officials": integer,
                 "leader_name": ....,
                 "leader_contact_num": ....,
                 }""",
@@ -193,6 +194,7 @@ class ContingentDetailView(generics.GenericAPIView):
                 "college_rep": college_rep.email,
                 "num_of_boys": integer,
                 "num_of_girls": integer,
+                "num_of_officials": integer,
                 "leader_name": ....,
                 "leader_contact_num": ....,
                 }""",
