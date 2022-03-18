@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseNotFound, HttpResponse
 from Authentication.models import UserAccount
 from Teams.models import Game, Team, Player
@@ -59,7 +59,7 @@ def table_to_response(name, table):
 
 def user_export(request, id):
     if request.user.is_authenticated and request.user.is_admin:
-        user = Player.objects.get(id=id)
+        user = get_object_or_404(Player, id=id)
         data = [["User Details"]]
         data = [
             ["Name", user.name],
@@ -80,7 +80,7 @@ def user_export(request, id):
 
 def game_export(request, id):
     if request.user.is_authenticated and request.user.is_admin:
-        game = Game.objects.get(id=id)
+        game = get_object_or_404(Game, id=id)
         data = [["College Name", "Members", "Captain"]]
         for i in range(1, game.max_players + 1):
             data[0].append("Player " + str(i))
