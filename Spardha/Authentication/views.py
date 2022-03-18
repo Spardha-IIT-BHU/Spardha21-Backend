@@ -91,7 +91,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
         email = request.data["email"]
 
         if UserAccount.objects.filter(email=email).exists():
-            user = UserAccount.objects.get(email=email)
+            user = UserAccount.objects.get_object_or_404(email=email)
             if not user.is_active:
                 return Response(
                     {"error": "User not authorized!"},
@@ -129,7 +129,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
 
 def PasswordTokenCheck(request, uidb64, token):
     id = smart_str(urlsafe_base64_decode(uidb64))
-    user = UserAccount.objects.get(id=id)
+    user = UserAccount.objects.get_object_or_404(id=id)
     if not PasswordResetTokenGenerator().check_token(user, token):
         raise Http404
     url = BASE_URL_FRONTEND + "/register/reset?id=" + str(uidb64) + "&token=" + str(token)
@@ -241,7 +241,7 @@ class RegisterView(generics.GenericAPIView):
 
 def ActivateAccount(request, uidb64, token):
     id = smart_str(urlsafe_base64_decode(uidb64))
-    user = UserAccount.objects.get(id=id)
+    user = UserAccount.objects.get_object_or_404(id=id)
     if not PasswordResetTokenGenerator().check_token(user, token):
         raise Http404
     url = BASE_URL_FRONTEND + "/register/login"

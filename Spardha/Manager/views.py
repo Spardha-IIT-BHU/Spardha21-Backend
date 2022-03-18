@@ -59,7 +59,7 @@ def table_to_response(name, table):
 
 def user_export(request, id):
     if request.user.is_authenticated and request.user.is_admin:
-        user = Player.objects.get(id=id)
+        user = Player.objects.get_object_or_404(id=id)
         data = [["User Details"]]
         data = [
             ["Name", user.name],
@@ -80,7 +80,7 @@ def user_export(request, id):
 
 def game_export(request, id):
     if request.user.is_authenticated and request.user.is_admin:
-        game = Game.objects.get(id=id)
+        game = Game.objects.get_object_or_404(id=id)
         data = [["College Name", "Members", "Captain"]]
         for i in range(1, game.max_players + 1):
             data[0].append("Player " + str(i))

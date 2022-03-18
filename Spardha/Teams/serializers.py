@@ -19,8 +19,8 @@ class TeamSerializer(serializers.ModelSerializer):
         game = data["game"].split("_")
         name = game[0]
         game_type = game[1]
-        game = Game.objects.get(name=name, game_type=game_type)
-        college_rep = UserAccount.objects.get(email=data["college_rep"])
+        game = Game.objects.get_object_or_404(name=name, game_type=game_type)
+        college_rep = UserAccount.objects.get_object_or_404(email=data["college_rep"])
         num_of_players = data["num_of_players"]
 
         team = Team.objects.create(
@@ -47,7 +47,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         data = self.validated_data
         name = data["name"]
-        team = Team.objects.get(id=data["team_id"])
+        team = Team.objects.get_object_or_404(id=data["team_id"])
         is_captain = data["is_captain"]
 
         player = Player.objects.create(
@@ -75,7 +75,7 @@ class ContingentSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         data = self.validated_data
-        college_rep = UserAccount.objects.get(email=data["college_rep"])
+        college_rep = UserAccount.objects.get_object_or_404(email=data["college_rep"])
         num_of_boys = data["num_of_boys"]
         num_of_girls = data["num_of_girls"]
         leader_name = data['leader_name']
