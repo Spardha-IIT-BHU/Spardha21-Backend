@@ -104,7 +104,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
                 "password-reset-confirm", kwargs={"uidb64": uidb64, "token": token}
             )
             absurl = "http://" + current_site + relativeLink
-            email_body = f"""<h2> Spardha'22 </h2>
+            email_body = f"""<h2> Spardha'21 </h2>
                  <br> <strong> Hello {user.name}! </strong>
                  <br> We have received a request to reset the password of your Spardha account. <br>
                  Click the link below to proceed further: <br> <a href='{absurl}'>Reset</a> <br>
@@ -197,7 +197,7 @@ def send_verification_mail(user,request):
         "activate-account", kwargs={"uidb64": uidb64, "token": token}
     )
     absurl = "http://" + current_site + relativeLink
-    email_body = f"""<h2> Spardha'22 </h2>
+    email_body = f"""<h2> Spardha'21 </h2>
          <br> <strong> Hello {user.name}! </strong>
          <br> Thanks for registering on Spardha <br>
          To complete your sign up, we just need to verify your email address.<br>

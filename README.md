@@ -3,7 +3,7 @@
 <img height="200px" src="https://user-images.githubusercontent.com/78701055/155994640-18c37b08-f6dc-493b-8116-c8b46f94a46b.png" alt="Loading img..."/>
 <img height="200px"  src="https://user-images.githubusercontent.com/78701055/155997992-04602a01-5dd9-41c3-a563-597fabf7d8d1.jpg" alt="Loading img..."/>
 </p>
-<h1 align="center"> Spardha'22 Backend </h1>
+<h1 align="center"> Spardha'21 Backend </h1>
 
 ### Working with repo:
 1. Clone the repo in which you have to work in your system.
