@@ -28,8 +28,8 @@ class ResetPasswordEmailSerializer(serializers.Serializer):
 
 class NewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=6)
-    token = serializers.CharField(min_length=1)
-    uidb64 = serializers.CharField(min_length=1)
+    token = serializers.CharField(min_length=1, allow_blank=True, allow_null=True)
+    uidb64 = serializers.CharField(min_length=1, allow_blank=True, allow_null=True)
 
     class Meta:
         fields = ["password", "token", "uidb64"]
