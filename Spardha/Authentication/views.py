@@ -45,6 +45,7 @@ class LoginView(generics.GenericAPIView):
             400: """{"error": "Please provide both username and password"}""",
             401: """{"error": "Please check your credentials...cannot login!"} 
                     {"error": "Please verify your email first and then login."}""",
+            403: """{"error": "Your account has been deleted. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"}""",
         }
     )
     def post(self, request):
@@ -60,6 +61,11 @@ class LoginView(generics.GenericAPIView):
             return Response(
                 {"error": "Please check your credentials...cannot login!"},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+        elif user.is_deleted is True:
+            return Response(
+                {"error": "Your account has been deleted. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"},
+                status=status.HTTP_423_LOCKED,
             )
         elif user.is_active is False:
             return Response(
@@ -189,6 +195,7 @@ class UserUpdateView(generics.GenericAPIView):
         manual_parameters=[token_param],
         responses={
             200: """{
+              "username": "string",
               "name": "string",
               "email": "user@example.com",
               "institution_name": "string",
@@ -202,6 +209,7 @@ class UserUpdateView(generics.GenericAPIView):
         try:
             user = request.user
             content = {
+                "username": user.username,
                 "name": user.name,
                 "email": user.email,
                 "institution": user.institution_name,
@@ -345,4 +353,41 @@ class ResendLinkView(generics.GenericAPIView):
         except UserAccount.DoesNotExist:
             return Response(
                 {"error": "Account with this mail is not registered!"}, status=status.HTTP_403_FORBIDDEN
+            )
+
+
+class DeleteAccountView(generics.GenericAPIView):
+    queryset = UserAccount.objects.all()
+    serializer_class = ResetPasswordEmailSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    @swagger_auto_schema(
+        manual_parameters=[token_param],
+        responses={
+            200: """{"success": "Account deleted successfully!"}""",
+            403: """{"error": "Account is deleted"}""",
+        }
+    )
+    def get(self, request):
+        try:
+            user = get_object_or_404(UserAccount, email=request.user.email)
+            if user.is_deleted:
+                return Response(
+                    {"error": "Account is deleted"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            try:
+                user.auth_token.delete()
+            except:
+                pass
+            user.is_active = False
+            user.is_deleted = True
+            user.save()
+            return Response(
+                {"success": "Account deleted successfully!"}, status=status.HTTP_200_OK
+            )
+        except UserAccount.DoesNotExist:
+            return Response(
+                {"error": "Account with this mail is not registered!"},
+                status=status.HTTP_403_FORBIDDEN,
             )

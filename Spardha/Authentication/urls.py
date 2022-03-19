@@ -5,7 +5,7 @@ from .views import (
     NewPasswordView,
     RegisterView,
 )
-from .views import ActivateAccount, LoginView, LogoutView, UserUpdateView, ResendLinkView
+from .views import ActivateAccount, LoginView, LogoutView, UserUpdateView, ResendLinkView, DeleteAccountView
 
 """
 TODO:
@@ -16,6 +16,7 @@ Todo GET (List and Detail), PUT, PATCH and DELETE.
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("delete/", DeleteAccountView.as_view(), name="delete"),
     path("register/", RegisterView.as_view(), name="register"),
     path("update/", UserUpdateView.as_view(), name="update"),
     path("verify/", ResendLinkView.as_view(), name="verify"),
