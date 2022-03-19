@@ -24,6 +24,11 @@ from rest_framework.authtoken.models import Token
 from django.shortcuts import redirect, get_object_or_404
 from django.http import Http404
 from Spardha.settings import BASE_URL_FRONTEND
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+token_param = openapi.Parameter('Authorization', openapi.IN_QUERY,
+                                description="Provide auth token", type=openapi.TYPE_STRING)
 
 
 class LoginView(generics.GenericAPIView):
@@ -34,6 +39,14 @@ class LoginView(generics.GenericAPIView):
 
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{ "token" : "......" }""",
+            400: """{"error": "Please provide both username and password"}""",
+            401: """{"error": "Please check your credentials...cannot login!"} 
+                    {"error": "Please verify your email first and then login."}""",
+        }
+    )
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -68,6 +81,12 @@ class LogoutView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        manual_parameters=[token_param],
+        responses={
+            200: """Success""",
+        }
+    )
     def get(self, request):
         request.user.auth_token.delete()
         logout(request)
@@ -86,6 +105,12 @@ def create_auth_token(user):
 class RequestPasswordResetEmail(generics.GenericAPIView):
     serializer_class = ResetPasswordEmailSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Link has been sent by email to reset password"}""",
+            400: """{"message": "No user with this email id exists"}""",
+        }
+    )
     def post(self, request):
 
         email = request.data["email"]
@@ -132,13 +157,20 @@ def PasswordTokenCheck(request, uidb64, token):
     user = get_object_or_404(UserAccount, id=id)
     if not PasswordResetTokenGenerator().check_token(user, token):
         raise Http404
-    url = BASE_URL_FRONTEND + "/register/reset?id=" + str(uidb64) + "&token=" + str(token)
+    url = BASE_URL_FRONTEND + "/register/reset?id=" + \
+        str(uidb64) + "&token=" + str(token)
     return redirect(url)
 
 
 class NewPasswordView(generics.GenericAPIView):
     serializer_class = NewPasswordSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": True, "message": "Password reset successful"}""",
+            401: """Error: Unauthorized""",
+        }
+    )
     def patch(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -153,6 +185,19 @@ class UserUpdateView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
     serializer_class = UserSerializer
 
+    @swagger_auto_schema(
+        manual_parameters=[token_param],
+        responses={
+            200: """{
+              "name": "string",
+              "email": "user@example.com",
+              "institution_name": "string",
+              "designation": "string",
+              "phone_no": "string"
+            }""",
+            403: """{"error": "An error occurred!"}""",
+        }
+    )
     def get(self, request):
         try:
             user = request.user
@@ -169,6 +214,13 @@ class UserUpdateView(generics.GenericAPIView):
                 {"error": "An error occurred!"}, status=status.HTTP_403_FORBIDDEN
             )
 
+    @swagger_auto_schema(
+        manual_parameters=[token_param],
+        responses={
+            200: """{"message": "Updated successfully!"}}""",
+            403: """{"error": "An error occurred!"}""",
+        }
+    )
     def post(self, request):
         user = UserAccount.objects.filter(email=request.user.email)
         if user is not None:
@@ -189,7 +241,9 @@ class UserUpdateView(generics.GenericAPIView):
             return Response(
                 {"error": "An error occurred!"}, status=status.HTTP_403_FORBIDDEN
             )
-def send_verification_mail(user,request):
+
+
+def send_verification_mail(user, request):
     uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
     token = PasswordResetTokenGenerator().make_token(user)
     current_site = get_current_site(request=request).domain
@@ -211,10 +265,18 @@ def send_verification_mail(user,request):
     }
     Util.send_email(data)
 
+
 class RegisterView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
     serializer_class = RegisterSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Verification link has been sent by email!"}""",
+            226: """ {"error": "User with same credentials already exists!"}""",
+            409: """Conflict Errors""",
+        }
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -222,7 +284,7 @@ class RegisterView(generics.GenericAPIView):
             if user is None:
                 user = serializer.save()
                 create_auth_token(user=user)
-                send_verification_mail(user,request)
+                send_verification_mail(user, request)
                 return Response(
                     {"success": "Verification link has been sent by email!"},
                     status=status.HTTP_200_OK,
@@ -249,10 +311,19 @@ def ActivateAccount(request, uidb64, token):
     user.save()
     return redirect(url)
 
+
 class ResendLinkView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
     serializer_class = ResetPasswordEmailSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Verification link has been sent by email!"}
+                    {"success": "Account already activated"}""",
+            403: """{"error": "Account is deleted"}
+                    {"error": "Account with this mail is not registered!"}""",
+        }
+    )
     def post(self, request):
         try:
             user = self.queryset.get(email=request.data["email"])
@@ -266,7 +337,7 @@ class ResendLinkView(generics.GenericAPIView):
                     {"error": "Account is deleted"},
                     status=status.HTTP_403_FORBIDDEN,
                 )
-            send_verification_mail(user,request)
+            send_verification_mail(user, request)
             return Response(
                 {"success": "Verification link has been sent on email!"},
                 status=status.HTTP_200_OK,
