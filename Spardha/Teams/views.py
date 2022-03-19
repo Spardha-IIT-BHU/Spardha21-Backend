@@ -65,7 +65,7 @@ class TeamCreateView(generics.GenericAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             college_rep = UserAccount.objects.filter(
-            email=serializer.data["college_rep"])
+                email=serializer.data["college_rep"])
             game = Game.objects.filter(name=serializer.data["game"].split(
                 "_")[0], game_type=serializer.data["game"].split("_")[1])
             team = Team.objects.filter(college_rep=college_rep.last(),
