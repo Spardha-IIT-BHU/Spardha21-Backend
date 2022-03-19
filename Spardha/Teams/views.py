@@ -65,7 +65,7 @@ class TeamCreateView(generics.GenericAPIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             college_rep = UserAccount.objects.filter(
-            email=serializer.data["college_rep"])
+                email=serializer.data["college_rep"])
             game = Game.objects.filter(name=serializer.data["game"].split(
                 "_")[0], game_type=serializer.data["game"].split("_")[1])
             team = Team.objects.filter(college_rep=college_rep.last(),
@@ -110,8 +110,21 @@ class AllTeamsView(generics.ListAPIView):
         # print(request.user)
         teams = Team.objects.filter(college_rep=request.user)
         if(teams.exists()):
-            serializer = self.get_serializer(teams, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            response_data = []
+            for game in Game.objects.all():
+                # print(game)
+                team = Team.objects.filter(
+                    college_rep=request.user, game=game)
+                if team.exists():
+                    team = team.last()
+                    response_data.append(
+                        {
+                            "id": team.id,
+                            "college_rep": team.college_rep.email,
+                            "game": team.game.name + '_' + team.game.game_type,
+                            "num_of_players": team.num_of_players
+                        })
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -160,8 +173,9 @@ class getDetailView(generics.ListAPIView):
         }
     )
     def get(self, request, id):
-        team = Team.objects.filter(id=id).last()
+        team = Team.objects.filter(id=id)
         if(team.exists()):
+            team = team.last()
             players = Player.objects.filter(team=team)
             serializer = self.get_serializer(players, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
