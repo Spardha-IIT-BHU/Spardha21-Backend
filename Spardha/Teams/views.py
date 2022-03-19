@@ -173,8 +173,9 @@ class getDetailView(generics.ListAPIView):
         }
     )
     def get(self, request, id):
-        team = Team.objects.filter(id=id).last()
+        team = Team.objects.filter(id=id)
         if(team.exists()):
+            team = team.last()
             players = Player.objects.filter(team=team)
             serializer = self.get_serializer(players, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
