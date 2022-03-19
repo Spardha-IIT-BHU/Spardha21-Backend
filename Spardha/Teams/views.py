@@ -60,22 +60,25 @@ class TeamCreateView(generics.GenericAPIView):
         }
     )
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        college_rep = UserAccount.objects.filter(
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            college_rep = UserAccount.objects.filter(
             email=serializer.data["college_rep"])
-        game = Game.objects.filter(name=serializer.data["game"].split(
-            "_")[0], game_type=serializer.data["game"].split("_")[1])
-        team = Team.objects.filter(college_rep=college_rep.last(),
-                                   game=game.last()).last()
-        response_data = {
-            "id": team.id,
-            "college_rep": team.college_rep.email,
-            "game": team.game.name + '_' + team.game.game_type,
-            "num_of_players": team.num_of_players
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+            game = Game.objects.filter(name=serializer.data["game"].split(
+                "_")[0], game_type=serializer.data["game"].split("_")[1])
+            team = Team.objects.filter(college_rep=college_rep.last(),
+                                       game=game.last()).first()
+            response_data = {
+                "id": team.id,
+                "college_rep": team.college_rep.email,
+                "game": team.game.name + '_' + team.game.game_type,
+                "num_of_players": team.num_of_players
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class AllTeamsView(generics.ListAPIView):

@@ -21,7 +21,7 @@ from django.contrib.auth import login, logout
 from django.urls import reverse
 from .utils import Util
 from rest_framework.authtoken.models import Token
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.http import Http404
 from Spardha.settings import BASE_URL_FRONTEND
 from drf_yasg.utils import swagger_auto_schema
@@ -116,7 +116,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
         email = request.data["email"]
 
         if UserAccount.objects.filter(email=email).exists():
-            user = UserAccount.objects.get(email=email)
+            user = get_object_or_404(UserAccount, email=email)
             if not user.is_active:
                 return Response(
                     {"error": "User not authorized!"},
@@ -154,7 +154,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
 
 def PasswordTokenCheck(request, uidb64, token):
     id = smart_str(urlsafe_base64_decode(uidb64))
-    user = UserAccount.objects.get(id=id)
+    user = get_object_or_404(UserAccount, id=id)
     if not PasswordResetTokenGenerator().check_token(user, token):
         raise Http404
     url = BASE_URL_FRONTEND + "/register/reset?id=" + \
@@ -303,7 +303,7 @@ class RegisterView(generics.GenericAPIView):
 
 def ActivateAccount(request, uidb64, token):
     id = smart_str(urlsafe_base64_decode(uidb64))
-    user = UserAccount.objects.get(id=id)
+    user = get_object_or_404(UserAccount, id=id)
     if not PasswordResetTokenGenerator().check_token(user, token):
         raise Http404
     url = BASE_URL_FRONTEND + "/register/login"

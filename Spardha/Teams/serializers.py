@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Game, Team, Player, Contingent
 from Authentication.models import UserAccount
+from django.shortcuts import get_object_or_404
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -19,8 +20,8 @@ class TeamSerializer(serializers.ModelSerializer):
         game = data["game"].split("_")
         name = game[0]
         game_type = game[1]
-        game = Game.objects.get(name=name, game_type=game_type)
-        college_rep = UserAccount.objects.get(email=data["college_rep"])
+        game = get_object_or_404(Game, name=name, game_type=game_type)
+        college_rep = get_object_or_404(UserAccount,email=data["college_rep"])
         num_of_players = data["num_of_players"]
 
         team = Team.objects.create(
@@ -47,7 +48,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         data = self.validated_data
         name = data["name"]
-        team = Team.objects.get(id=data["team_id"])
+        team = get_object_or_404(Team, id=data["team_id"])
         is_captain = data["is_captain"]
 
         player = Player.objects.create(
@@ -76,7 +77,7 @@ class ContingentSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         data = self.validated_data
-        college_rep = UserAccount.objects.get(email=data["college_rep"])
+        college_rep = get_object_or_404(UserAccount, email=data["college_rep"])
         num_of_boys = data["num_of_boys"]
         num_of_girls = data["num_of_girls"]
         num_of_officials = data["num_of_officials"]

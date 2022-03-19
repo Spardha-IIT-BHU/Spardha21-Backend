@@ -1,5 +1,3 @@
-import random
-
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_str
@@ -95,7 +93,7 @@ class RegisterSerializer(serializers.Serializer):
         validators=[
             UniqueValidator(
                 queryset=UserAccount.objects.filter(is_deleted=False),
-                message=("A user with this institute already registered. Contact head for queries!"),
+                message=("A user with this institute already registered. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"),
             )
         ],
     )
