@@ -1,4 +1,3 @@
-from django.contrib.auth.models import Group, Permission
 from django.db import models
 
 # Create your models here.
@@ -20,4 +19,3 @@ class RightsSupport(models.Model):
         )
 
 
-new_group, created = Group.objects.get_or_create(name='Special Access')
