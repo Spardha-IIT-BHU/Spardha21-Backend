@@ -40,7 +40,7 @@ def show_home(request):
         "gamesdata": game_data(),
     }
 
-    if request.user.is_authenticated and request.user.is_admin:
+    if request.user.is_authenticated and request.user.has_perm("Manager.view_manager"):
         return render(request, "base.html", context)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 
@@ -58,7 +58,7 @@ def table_to_response(name, table):
 
 
 def user_export(request, id):
-    if request.user.is_authenticated and request.user.is_admin:
+    if request.user.is_authenticated and request.user.has_perm("Manager.export_user"):
         user = get_object_or_404(Player, id=id)
         data = [["User Details"]]
         data = [
@@ -79,7 +79,7 @@ def user_export(request, id):
 
 
 def game_export(request, id):
-    if request.user.is_authenticated and request.user.is_admin:
+    if request.user.is_authenticated and request.user.has_perm("Manager.export_game"):
         game = get_object_or_404(Game, id=id)
         data = [["College Name", "Members", "Captain"]]
         for i in range(1, game.max_players + 1):
@@ -98,7 +98,7 @@ def game_export(request, id):
 
 
 def all_export(request):
-    if request.user.is_authenticated and request.user.is_admin:
+    if request.user.is_authenticated and request.user.has_perm("Manager.export_all"):
         data = [["Name", "Role", "Institution Name", "Game", "Members"]]
         for player in Player.objects.all().order_by("name"):
             data.append(

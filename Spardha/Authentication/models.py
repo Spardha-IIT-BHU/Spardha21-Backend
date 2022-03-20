@@ -54,10 +54,26 @@ class UserAccount(AbstractBaseUser):
         else:
             return f"{self.name}"
 
-    # For checking permissions. to keep it simple all admin have ALL permissons
+    # Checking permissions
     def has_perm(self, perm, obj=None):
-        return self.is_admin
+        if self.is_admin:
+            return True
+        if self.is_staff and perm.split('.')[1] in self.get_all_permissions():
+            return True
+        else: 
+            print(self.get_all_permissions())
+        return False
+    
+    # return all the user permission
+    def get_all_permissions(self, obj=None):
+        all_perm=[]
+        if self.group is None:
+            return all_perm
+        for perm in self.group.permissions.all():
+            all_perm.append(perm.codename)
+        return all_perm
 
     # Does this user have permission to view this app?
     def has_module_perms(self, app_label):
         return True
+
