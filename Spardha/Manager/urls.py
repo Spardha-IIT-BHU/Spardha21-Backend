@@ -5,5 +5,5 @@ urlpatterns = [
     path("", show_home, name="index"),
     path("all", all_export, name="index"),
     path("game/<id>/", game_export, name="index"),
-    path("user/<id>/", user_export, name="index"),
+    path("user/<id>/<player>/", user_export, name="index"),
 ]
