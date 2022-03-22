@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Game, Team, Player, Contingent
+from .models import Game, Team, Contingent
 from Authentication.models import UserAccount
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.fields import ArrayField
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -9,11 +10,15 @@ class GameSerializer(serializers.ModelSerializer):
         model = Game
         fields = "__all__"
 
-
 class TeamSerializer(serializers.ModelSerializer):
-    college_rep = serializers.EmailField()
+    captain_name=serializers.CharField()
+    captain_phone = serializers.CharField()
+    user = serializers.CharField(source='user.email')
     game = serializers.CharField()
-    num_of_players = serializers.IntegerField()
+    players = ArrayField(
+            serializers.CharField(),
+            blank=True,
+    )
 
     def save(self, **kwargs):
         data = self.validated_data
@@ -21,13 +26,15 @@ class TeamSerializer(serializers.ModelSerializer):
         name = game[0]
         game_type = game[1]
         game = get_object_or_404(Game, name=name, game_type=game_type)
-        college_rep = get_object_or_404(UserAccount,email=data["college_rep"])
-        num_of_players = data["num_of_players"]
-
+        user = get_object_or_404(UserAccount,email=data["user"])
+        if Team.objects.filter(user=user, game=game).exists():
+            raise serializers.ValidationError("Team already exists")
         team = Team.objects.create(
+            captain_name=data["captain_name"],
+            captain_phone=data["captain_phone"],
             game=game,
-            college_rep=college_rep,
-            num_of_players=num_of_players,
+            user=user,
+            players=data["players"],
         )
         return team
 
@@ -35,35 +42,10 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = [
             "game",
-            "college_rep",
-            "num_of_players",
-        ]
-
-
-class PlayerSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()
-    team_id = serializers.IntegerField()
-    is_captain = serializers.BooleanField()
-
-    def save(self, **kwargs):
-        data = self.validated_data
-        name = data["name"]
-        team = get_object_or_404(Team, id=data["team_id"])
-        is_captain = data["is_captain"]
-
-        player = Player.objects.create(
-            name=name,
-            team=team,
-            is_captain=is_captain,
-        )
-        return player
-
-    class Meta:
-        model = Player
-        fields = [
-            "name",
-            "team_id",
-            "is_captain",
+            "user",
+            "captain_name",
+            "captain_phone",
+            "players",
         ]
 
 

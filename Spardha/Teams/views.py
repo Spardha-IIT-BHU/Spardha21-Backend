@@ -1,13 +1,11 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .models import Game, Team, Player, Contingent
+from .models import Game, Team, Contingent
 from .serializers import (
     GameSerializer,
     TeamSerializer,
-    PlayerSerializer,
     ContingentSerializer,
 )
-from Authentication.models import UserAccount
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -40,144 +38,6 @@ class AllGamesView(generics.ListAPIView):
         game = Game.objects.filter(game_type=id)
         if(game.exists()):
             serializer = self.get_serializer(game, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-class TeamCreateView(generics.GenericAPIView):
-    serializer_class = TeamSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    @swagger_auto_schema(
-        responses={
-            200: """{
-                        "id": team.id,
-                        "college_rep": team.college_rep.email,
-                        "game": team.game.name + '_' + team.game.game_type,
-                        "num_of_players": team.num_of_players
-                    }""",
-        }
-    )
-    def post(self, request):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            college_rep = UserAccount.objects.filter(
-                email=serializer.data["college_rep"])
-            game = Game.objects.filter(name=serializer.data["game"].split(
-                "_")[0], game_type=serializer.data["game"].split("_")[1])
-            team = Team.objects.filter(college_rep=college_rep.last(),
-                                       game=game.last()).first()
-            response_data = {
-                "id": team.id,
-                "college_rep": team.college_rep.email,
-                "game": team.game.name + '_' + team.game.game_type,
-                "num_of_players": team.num_of_players
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class AllTeamsView(generics.ListAPIView):
-    serializer_class = TeamSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    @swagger_auto_schema(
-        responses={
-            200: """[
-                        {
-                            "id": team.id,
-                            "college_rep": team.college_rep.email,
-                            "game": team.game.name + '_' + team.game.game_type,
-                            "num_of_players": team.num_of_players
-                        },
-                        {
-                            "id": team.id,
-                            "college_rep": team.college_rep.email,
-                            "game": team.game.name + '_' + team.game.game_type,
-                            "num_of_players": team.num_of_players
-                        }
-                        ...
-                    ]
-                    """,
-            404: """{"error":"No teams found"}""",
-        }
-    )
-    def get(self, request):
-        # print(request.user)
-        teams = Team.objects.filter(college_rep=request.user)
-        if(teams.exists()):
-            response_data = []
-            for game in Game.objects.all():
-                # print(game)
-                team = Team.objects.filter(
-                    college_rep=request.user, game=game)
-                if team.exists():
-                    team = team.last()
-                    response_data.append(
-                        {
-                            "id": team.id,
-                            "college_rep": team.college_rep.email,
-                            "game": team.game.name + '_' + team.game.game_type,
-                            "num_of_players": team.num_of_players
-                        })
-            return Response(response_data, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-class TeamDetailView(generics.GenericAPIView):
-    serializer_class = PlayerSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    @swagger_auto_schema(
-        responses={
-            200: """{
-                        "name": ...,
-                        "team_id": integer,
-                        "is_captain": boolean,
-                    }""",
-        }
-    )
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class getDetailView(generics.ListAPIView):
-    serializer_class = PlayerSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    @swagger_auto_schema(
-        responses={
-            200: """[
-                        {
-                            "name": ...,
-                            "team_id": integer,
-                            "is_captain": boolean,
-                        },
-                            {
-                            "name": ...,
-                            "team_id": integer,
-                            "is_captain": boolean,
-                        },
-                        ...
-                    ]
-                    """,
-            404: """{"error":"Team not found"}""",
-        }
-    )
-    def get(self, request, id):
-        team = Team.objects.filter(id=id)
-        if(team.exists()):
-            team = team.last()
-            players = Player.objects.filter(team=team)
-            serializer = self.get_serializer(players, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -237,3 +97,77 @@ class ContingentDetailView(generics.GenericAPIView):
         if contingent.exists():
             contingent.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AllTeamsView(generics.ListAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    @swagger_auto_schema(
+        responses={
+            200: """[{
+                    "captain_name": ...
+                    "captain_phone": ...
+                    "game": ...
+                    "players": ...
+                    }]""",
+            404: """{"error":"No teams found"}""",
+        }
+    )
+    def get(self, request):
+        team = Team.objects.filter(user=request.user)
+        if team.exists():
+            serializer = self.get_serializer(team, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error":"No teams found"},status=status.HTTP_404_NOT_FOUND)
+    
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Team has been created"}""",
+            404: """{"error":"Game not found"}
+                    {"error":"Team already exists"}""",
+        }
+    )
+    def post(self,request):
+        request.data["email"]=request.user.email
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"success": "Team has been created"}, status=status.HTTP_200_OK)
+
+class TeamView(generics.GenericAPIView):
+    serializer_class = TeamSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+    @swagger_auto_schema(
+        responses={
+            200: """{
+                    "captain_name": ...
+                    "captain_phone": ...
+                    "game": ...
+                    "players": ...
+                    }""",
+            404: """{"error":"Team not found"}""",
+        }
+    )
+    def get(self, request, id):
+        team = Team.objects.filter(id=id)
+        if team.exists():
+            serializer = self.get_serializer(team.last())
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error":"Team not found"},status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Team has been deleted"}""",
+            204: """{"error":"Team not found"}""",
+        }
+    )
+    def delete(self, request, id):
+        team = Team.objects.filter(id=id)
+        if team.exists():
+            team.delete()
+            return Response({"success": "Team has been deleted"}, status=status.HTTP_200_OK)
+        return Response({"error":"Team not found"},status=status.HTTP_204_NO_CONTENT)

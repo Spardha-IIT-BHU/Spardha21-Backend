@@ -1,6 +1,7 @@
 from django.db import models
 from Authentication.models import UserAccount
 from django.core.validators import MinLengthValidator
+from django.contrib.postgres.fields import ArrayField
 
 
 class Game(models.Model):
@@ -15,22 +16,18 @@ class Game(models.Model):
 
 class Team(models.Model):
     # id = models.IntegerField(unique=True, primary_key=True)
-    college_rep = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    captain_name=models.CharField(max_length=40)
+    captain_phone = models.CharField(max_length=10, validators=[MinLengthValidator(10)])
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    num_of_players = models.IntegerField()
+    players = ArrayField(
+            models.SlugField(max_length=50,blank=True),
+            blank=True,
+    )
 
     def __str__(self):
         return (self.game.name+"_"+self.game.game_type+"_" +
-                self.college_rep.institution_name)
-
-
-class Player(models.Model):
-    name = models.CharField(max_length=50)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    is_captain = models.BooleanField()
-
-    def __str__(self):
-        return self.name + ("_Captain" if self.is_captain else "")
+                self.user.institution_name)
 
 
 class Contingent(models.Model):
