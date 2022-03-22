@@ -50,29 +50,33 @@
         </div>
     </nav>
 
-    <div class="container-fluid" style="align-items:center">
-        <div class="row" id="allcards">
-            <h2 id="empty" style="display: none;">Not found!</h2>
-            {% for user in usersdata %}
-            <div class="col-auto">
-                <div class="card" style="width: 18rem; margin-top: 10px;">
-                    <div class="card-body text-white bg-dark ">
-                        <h5 class="card-title">{{user.name}}</h5>
-                        <h6 class="card-subtitle mb-2">{{user.player}}</h6>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>College: </strong>{{user.institution_name}}</li>
-                        <li class="list-group-item"><strong>Game: </strong>{{user.game}}</li>
-                        <li class="list-group-item"><strong>Total Members: </strong>{{user.members}}</li>
-                    </ul>
-                    <div class="card-body">
-                        <a href="/manager/user/{{user.id}}/{{user.name}}/" class="btn btn-warning">Export User</a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Player/Captain</th>
+            <th scope="col">College</th>
+            <th scope="col">Game</th>
+            <th scope="col">Total Members</th>
+            <th scope="col">Export</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr scope="row" style="display:none;" id="empty">
+                <th><h2>No Users Found</h2></th>
+            </tr>
+        {% for user in usersdata %}
+          <tr class="data">
+            <th scope="row" class="name">{{user.name}}</th>
+            <td>{{user.player}}</td>
+            <td>{{user.institution_name}}</td>
+            <td>{{user.game}}</td>
+            <td>{{user.members}}</td>
+            <td> <a href="/manager/user/{{user.id}}/{{user.name}}/" class="btn btn-warning">Download</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
@@ -85,18 +89,20 @@
         crossorigin="anonymous"></script>
     <script>
         $('#perform').submit(function (e) {
-            var search = document.getElementsByClassName("form-control")[0].value;
-            document.getElementById("empty").style.display = "block";
-            for (var i = 0; i < document.getElementsByClassName("card").length; i++) {
-                if (document.getElementsByClassName("card")[i].getElementsByClassName("card-title")[0].innerHTML.toLowerCase().indexOf(search.toLowerCase()) == -1) {
-                    document.getElementsByClassName("card")[i].style.display = "none";
+            var search=document.getElementsByClassName('form-control')[0].value;
+            e.preventDefault();
+            document.getElementById("empty").style.display = "table-row";
+            nodes=document.getElementsByClassName('data');
+            for (var i = 0; i < nodes.length; i+=1) {
+                if (nodes[i].innerHTML.toLowerCase().search(search) == -1) {
+                    nodes[i].style.display = "none";
                 }
                 else {
-                    document.getElementsByClassName("card")[i].style.display = "block";
+                    console.log(nodes[i].innerHTML.toLowerCase());
+                    nodes[i].style.display = "table-row";
                     document.getElementById("empty").style.display = "none";
                 }
             }
-            e.preventDefault();
         });
     </script>
 </body>

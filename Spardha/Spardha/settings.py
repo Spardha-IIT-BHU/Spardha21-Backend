@@ -96,11 +96,6 @@ WSGI_APPLICATION = "Spardha.wsgi.application"
 DATABASES = {
     "default": {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': 'dad8c4d2chtn9i',
-       'USER': 'hjzjypfcxfjqya',
-       'PASSWORD': '8d1c81e446a8857ac4003bada492d82a84564ee3d95bc672bfe56624007231d8',
-       'HOST': 'ec2-174-129-243-38.compute-1.amazonaws.com',
-       'PORT': '5432',
     }
 }
 

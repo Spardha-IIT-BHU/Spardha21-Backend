@@ -4,6 +4,7 @@ from .models import Game, Team, Contingent
 from .serializers import (
     GameSerializer,
     TeamSerializer,
+    TeamUpdateSerializer,
     ContingentSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
@@ -130,35 +131,32 @@ class AllTeamsView(generics.ListAPIView):
         }
     )
     def post(self,request):
-        print("cha mudao")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=self.request.user)
         return Response({"success": "Team has been created"}, status=status.HTTP_200_OK)
 
 class TeamView(generics.GenericAPIView):
-    serializer_class = TeamSerializer
+    serializer_class = TeamUpdateSerializer
     permission_classes = (permissions.IsAuthenticated, )
 
     @swagger_auto_schema(
         responses={
-            200: """{
-                    "captain_name": ...
-                    "captain_phone": ...player.
-                    "game": ...
-                    "players": ...
-                    }""",
-            403: """{"error":"You are not authorized to view this team"}""",
+            200: """{"success":"Team Details Modified"}""",
             404: """{"error":"Team not found"}""",
         }
     )
-    def get(self, request, id):
-        if(request.user!=Team.objects.get(id=id).user):
-            return Response({"error":"You are not authorized to view this team"},status=status.HTTP_403_FORBIDDEN)
-        team = Team.objects.filter(id=id)
+    def put(self, request, game):
+        game=Game.objects.get(name=game.split('_')[0],game_type=game.split('_')[1])
+        team = Team.objects.filter(game=game, user=request.user)
         if team.exists():
-            serializer = self.get_serializer(team.last())
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if "captain_name" in request.data:
+                team.update(captain_name=request.data["captain_name"])
+            if "captain_phone" in request.data:
+                team.update(captain_phone=request.data["captain_phone"])
+            if "players" in request.data:
+                team.update(players=request.data["players"])
+            return Response({"success":"Team Details Modified"}, status=status.HTTP_200_OK)
         else:
             return Response({"error":"Team not found"},status=status.HTTP_404_NOT_FOUND)
 
@@ -166,13 +164,11 @@ class TeamView(generics.GenericAPIView):
         responses={
             200: """{"success": "Team has been deleted"}""",
             204: """{"error":"Team not found"}""",
-            403: """{"error":"You are not authorized to delete this team"}""",
         }
     )
-    def delete(self, request, id):
-        if(request.user!=Team.objects.get(id=id).user):
-            return Response({"error":"You are not authorized to delete this team"},status=status.HTTP_403_FORBIDDEN)
-        team = Team.objects.filter(id=id)
+    def delete(self, request, game):
+        game=Game.objects.get(name=game.split('_')[0],game_type=game.split('_')[1])
+        team = Team.objects.filter(game=game, user=request.user)
         if team.exists():
             team.delete()
             return Response({"success": "Team has been deleted"}, status=status.HTTP_200_OK)

@@ -14,27 +14,29 @@ def user_data():
     users = []
 
     for team in Team.objects.all():
-        users.append(
-            {
-                "id": team.id,
-                "name": team.captain_name,
-                "player": ("Captain"),
-                "institution_name": team.user.institution_name,
-                "game": team.game.name,
-                "members": len(team.players)+1,
-            }
-        )
-        for player in team.players:
+        if team.captain_name!=""  and team.captain_name is not None:
             users.append(
                 {
                     "id": team.id,
-                    "name": player,
-                    "player": ("Player"),
+                    "name": team.captain_name,
+                    "player": ("Captain"),
                     "institution_name": team.user.institution_name,
                     "game": team.game.name,
                     "members": len(team.players)+1,
                 }
             )
+        for player in team.players:
+            if player!="" and player is not None: 
+                users.append(
+                    {
+                        "id": team.id,
+                        "name": player,
+                        "player": ("Player"),
+                        "institution_name": team.user.institution_name,
+                        "game": team.game.name,
+                        "members": len(team.players)+1,
+                    }
+                )
     return users
 
 
@@ -109,25 +111,27 @@ def all_export(request):
     if request.user.is_authenticated and request.user.has_perm("Manager.export_all"):
         data = [["Name", "Role", "Institution Name", "Game", "Members"]]
         for team in Team.objects.all():
-            data.append(
-                [
-                    team.captain_name,
-                    ("Captain"),
-                    team.user.institution_name,
-                    team.game.name,
-                    len(team.players)+1,
-                ]
-            )
-            for player in team.players:
+            if team.captain_name!=""  and team.captain_name is not None:
                 data.append(
                     [
-                        player,
-                        ("Player"),
+                        team.captain_name,
+                        ("Captain"),
                         team.user.institution_name,
                         team.game.name,
                         len(team.players)+1,
                     ]
                 )
+            for player in team.players:
+                if player!="" and player is not None:
+                    data.append(
+                        [
+                            player,
+                            ("Player"),
+                            team.user.institution_name,
+                            team.game.name,
+                            len(team.players)+1,
+                        ]
+                    )
         return table_to_response("AllUsers", data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 

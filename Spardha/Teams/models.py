@@ -15,13 +15,12 @@ class Game(models.Model):
 
 
 class Team(models.Model):
-    # id = models.IntegerField(unique=True, primary_key=True)
-    captain_name=models.CharField(max_length=40)
-    captain_phone = models.CharField(max_length=10, validators=[MinLengthValidator(10)])
+    captain_name=models.CharField(max_length=40, blank=True, null=True)
+    captain_phone = models.CharField(max_length=10, validators=[MinLengthValidator(10)], blank=True, null=True)
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     players = ArrayField(
-            models.SlugField(max_length=50,blank=True),
+            models.CharField(max_length=50, blank=True, null=True),
             blank=True,
     )
 
