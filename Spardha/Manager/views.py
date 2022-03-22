@@ -13,7 +13,7 @@ import csv
 def user_data():
     users = []
 
-    for team in Team.objects.all().order_by("name"):
+    for team in Team.objects.all():
         users.append(
             {
                 "id": team.id,
@@ -21,10 +21,10 @@ def user_data():
                 "player": ("Captain"),
                 "institution_name": team.user.institution_name,
                 "game": team.game.name,
-                "members": team.players.count()+1,
+                "members": len(team.players)+1,
             }
         )
-        for player in team.players.all():
+        for player in team.players:
             users.append(
                 {
                     "id": team.id,
@@ -32,7 +32,7 @@ def user_data():
                     "player": ("Player"),
                     "institution_name": team.user.institution_name,
                     "game": team.game.name,
-                    "members": team.players.count()+1,
+                    "members": len(team.players)+1,
                 }
             )
     return users
@@ -79,16 +79,11 @@ def user_export(request, id,player):
         data = [["User Details"]]
         data = [
             ["Name", player],
-            ["Role", ("Captain" if team.captain==player else "Player")],
+            ["Role", ("Captain" if team.captain_name==player else "Player")],
             ["Institution Name", team.user.institution_name],
             ["Game", team.game.name],
-            ["Total Members", team.players.count()+1],
+            ["Total Members", len(team.players)+1],
         ]
-        # group = Player.objects.filter(name=user.name)
-        # data.append([])
-        # data.append(["All Games", "Players"])
-        # for object in group:
-        #     data.append([object.team.game.name, object.team.num_of_players])
 
         return table_to_response(player.replace(" ", ""), data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
@@ -97,14 +92,15 @@ def user_export(request, id,player):
 def game_export(request, id):
     if request.user.is_authenticated and request.user.has_perm("Manager.export_game"):
         game = get_object_or_404(Game, id=id)
-        data = [["College Name", "Members", "Captain"]]
+        data = [["College Name", "Members", "Captain", "Captain phone"]]
         for i in range(1, game.max_players + 1):
             data[0].append("Player " + str(i))
         for team in Team.objects.filter(game=game):
-            arr = [team.user.institution_name, team.players.count()+1, team.captain_name, team.captain_phone]
-            for player in Team.players.all():
+            arr = [team.user.institution_name, len(team.players)+1, team.captain_name, team.captain_phone]
+            for player in team.players:
                 arr.append(player)
             data.append(arr)
+        data.sort(key=lambda x: x[0])
         return table_to_response(game.name.replace(" ", ""), data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 
@@ -112,24 +108,24 @@ def game_export(request, id):
 def all_export(request):
     if request.user.is_authenticated and request.user.has_perm("Manager.export_all"):
         data = [["Name", "Role", "Institution Name", "Game", "Members"]]
-        for team in Team.objects.all().order_by("name"):
+        for team in Team.objects.all():
             data.append(
                 [
                     team.captain_name,
                     ("Captain"),
                     team.user.institution_name,
                     team.game.name,
-                    team.players.count()+1,
+                    len(team.players)+1,
                 ]
             )
-            for player in team.players.all():
+            for player in team.players:
                 data.append(
                     [
                         player,
                         ("Player"),
-                        player.team.user.institution_name,
-                        player.team.game.name,
-                        player. team.players.count()+1,
+                        team.user.institution_name,
+                        team.game.name,
+                        len(team.players)+1,
                     ]
                 )
         return table_to_response("AllUsers", data)

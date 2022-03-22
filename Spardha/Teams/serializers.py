@@ -11,22 +11,24 @@ class GameSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class TeamSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
     captain_name=serializers.CharField()
     captain_phone = serializers.CharField()
-    user = serializers.CharField(source='user.email')
     game = serializers.CharField()
     players = ArrayField(
             serializers.CharField(),
             blank=True,
     )
 
-    def save(self, **kwargs):
+    def save(self, user, **kwargs):
         data = self.validated_data
-        game = data["game"].split("_")
-        name = game[0]
-        game_type = game[1]
-        game = get_object_or_404(Game, name=name, game_type=game_type)
-        user = get_object_or_404(UserAccount,email=data["user"])
+        try:
+            game = data["game"].split("_")
+            name = game[0]
+            game_type = game[1]
+            game = Game.objects.get(name=name, game_type=game_type)
+        except:
+            raise serializers.ValidationError("Invalid Game Name")
         if Team.objects.filter(user=user, game=game).exists():
             raise serializers.ValidationError("Team already exists")
         team = Team.objects.create(
@@ -41,8 +43,8 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = [
+            "id",
             "game",
-            "user",
             "captain_name",
             "captain_phone",
             "players",

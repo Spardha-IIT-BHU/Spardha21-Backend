@@ -130,10 +130,10 @@ class AllTeamsView(generics.ListAPIView):
         }
     )
     def post(self,request):
-        request.data["email"]=request.user.email
+        print("cha mudao")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user=self.request.user)
         return Response({"success": "Team has been created"}, status=status.HTTP_200_OK)
 
 class TeamView(generics.GenericAPIView):
@@ -144,14 +144,17 @@ class TeamView(generics.GenericAPIView):
         responses={
             200: """{
                     "captain_name": ...
-                    "captain_phone": ...
+                    "captain_phone": ...player.
                     "game": ...
                     "players": ...
                     }""",
+            403: """{"error":"You are not authorized to view this team"}""",
             404: """{"error":"Team not found"}""",
         }
     )
     def get(self, request, id):
+        if(request.user!=Team.objects.get(id=id).user):
+            return Response({"error":"You are not authorized to view this team"},status=status.HTTP_403_FORBIDDEN)
         team = Team.objects.filter(id=id)
         if team.exists():
             serializer = self.get_serializer(team.last())
@@ -163,9 +166,12 @@ class TeamView(generics.GenericAPIView):
         responses={
             200: """{"success": "Team has been deleted"}""",
             204: """{"error":"Team not found"}""",
+            403: """{"error":"You are not authorized to delete this team"}""",
         }
     )
     def delete(self, request, id):
+        if(request.user!=Team.objects.get(id=id).user):
+            return Response({"error":"You are not authorized to delete this team"},status=status.HTTP_403_FORBIDDEN)
         team = Team.objects.filter(id=id)
         if team.exists():
             team.delete()
