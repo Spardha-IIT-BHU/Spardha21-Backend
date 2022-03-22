@@ -104,7 +104,7 @@ def game_export(request, id):
                 arr.append(player)
             data.append(arr)
         data.sort(key=lambda x: x[0])
-        return table_to_response(game.name.replace(" ", ""), data)
+        return table_to_response(game.name.replace(" ", "")+"_"+game.game_type, data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 
 
