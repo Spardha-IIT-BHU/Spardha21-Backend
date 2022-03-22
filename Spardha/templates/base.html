@@ -25,16 +25,16 @@
             <div class="collapse navbar-collapse" id="navbarScroll">
                 <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/manager/all">Full Export</a>
+                        <a class="nav-link active" aria-current="page" href="/manager">Home</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
-                            Event export
+                            View Game
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                             {% for game in gamesdata %}
-                            <a class="dropdown-item" href="/manager/game/{{game.id}}">{{game.name}}</a>
+                            <a class="dropdown-item" href="/manager/{{game.id}}">{{game.name}} ({{game.type}})</a>
                             {% endfor %}
                         </div>
                     </li>
@@ -49,34 +49,80 @@
             </div>
         </div>
     </nav>
-
-    <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Player/Captain</th>
-            <th scope="col">College</th>
-            <th scope="col">Game</th>
-            <th scope="col">Total Members</th>
-            <th scope="col">Export</th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr scope="row" style="display:none;" id="empty">
-                <th><h2>No Users Found</h2></th>
-            </tr>
-        {% for user in usersdata %}
-          <tr class="data">
-            <th scope="row" class="name">{{user.name}}</th>
-            <td>{{user.player}}</td>
-            <td>{{user.institution_name}}</td>
-            <td>{{user.game}}</td>
-            <td>{{user.members}}</td>
-            <td> <a href="/manager/user/{{user.id}}/{{user.name}}/" class="btn btn-warning">Download</a></td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+    <div style="background: url(https://source.unsplash.com/random/?sports,games);background-repeat:no-repeat;background-size: cover;background-position: center;" class="jumbotron bg-cover text-white">
+        <div class="container py-5 text-center" style="background-color:rgba(0, 0, 0, 0.236);">
+            {% if usersdata is not none %}
+            <h1 class="display-4 font-weight-bold">All Users</h1>
+            <p class="font-italic mb-0">View all users data here, you can search and download for particular user also!</p>
+            <a href="/manager/all"  role="button" class="btn btn-primary mt-3 px-5">Download this sheet</a>
+            {% endif %}
+            {% if gameid is not none %}
+            <h1 class="display-4 font-weight-bold">{{gamename}}</h1>
+            <p class="font-italic mb-0">View all teams data here, you can download all teams participating in this game!</p>
+            <a href="/manager/game/{{gameid}}"  role="button" class="btn btn-primary mt-3 px-5">Download this sheet</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            {% if usersdata is not none %}
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Player/Captain</th>
+                <th scope="col">College</th>
+                <th scope="col">Game</th>
+                <th scope="col">Total Members</th>
+                <th scope="col">Export</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr scope="row" style="display:none;" id="empty">
+                    <th><h2>No Users Found</h2></th>
+                </tr>
+            {% for user in usersdata %}
+              <tr class="data">
+                <th scope="row" class="name">{{user.name}}</th>
+                <td>{{user.player}}</td>
+                <td>{{user.institution_name}}</td>
+                <td>{{user.game}}</td>
+                <td>{{user.members}}</td>
+                <td> <a href="/manager/user/{{user.id}}/{{user.name}}/" class="btn btn-warning">Download</a></td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            {% endif %}
+            {% if gamedata is not none %}
+            <thead>
+              <tr>
+                <th scope="col">College</th>
+                <th scope="col">Total Members</th>
+                <th scope="col">Captain</th>
+                <th scope="col">Captain phone</th>
+                <th scope="col">Players</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr scope="row" style="display:none;" id="empty">
+                    <th><h2>No Teams Found</h2></th>
+                </tr>
+            {% for team in gamedata %}
+              <tr class="data">
+                <th scope="row" class="name">{{team.college}}</th>
+                <td>{{team.members}}</td>
+                <td>{{team.captain}}</td>
+                <td>{{team.captain_phone}}</td>
+                <td>
+                    {% for player in team.players %}
+                        {{player}} 
+                    {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+            {% endif %}
+        </table>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

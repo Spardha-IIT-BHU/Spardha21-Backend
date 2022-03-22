@@ -47,6 +47,7 @@ def game_data():
             {
                 "id": game.id,
                 "name": game.name,
+                "type": game.game_type,
             }
         )
     return games
@@ -135,4 +136,22 @@ def all_export(request):
         return table_to_response("AllUsers", data)
     return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
 
-
+def show_game(request, id):
+    if request.user.is_authenticated and request.user.has_perm("Manager.view_game"):
+        game = get_object_or_404(Game, id=id)
+        all_team=[]
+        for team in Team.objects.filter(game=game):
+            arr=[]
+            for player in team.players:
+                arr.append(player)
+            all_team.append({
+                "college": team.user.institution_name,
+                "members": len(team.players)+1,
+                "captain": team.captain_name,
+                "phone": team.captain_phone,
+                "players": arr,
+            })
+        all_team.sort(key=lambda x: x["college"])
+        context = {"gameid":id, "gamename": game.name+"("+game.game_type+")", "gamesdata": game_data(), "gamedata": all_team}
+        return render(request, "base.html", context)
+    return HttpResponseNotFound("<h1>You are not allowed to visit this page!!!</h1>")
