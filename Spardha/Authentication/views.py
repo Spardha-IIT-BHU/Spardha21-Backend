@@ -140,7 +140,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
                  <br> We have received a request to reset the password of your Spardha account. <br>
                  Click the link below to proceed further: <br> <a href='{absurl}'>Reset</a> <br>
                  If you have any questions, please contact us at 
-                 <a href='mailto:spardha@gmail.com'>spardha@gmail.com</a>"""
+                 <a href='mailto:info@spardha.co.in'>info@spardha.co.in</a>"""
             data = {
                 "email_body": email_body,
                 "to_mail": [user.email],
@@ -265,7 +265,7 @@ def send_verification_mail(user, request):
          To complete your sign up, we just need to verify your email address.<br>
          Click the link below to verify: <br> <a href='{absurl}'>Verify</a> <br>
          <br> If you have any questions, please contact us at 
-         <a href='mailto:spardha@gmail.com'>spardha@gmail.com</a>"""
+         <a href='mailto:info@spardha.co.in'>info@spardha.co.in</a>"""
     data = {
         "email_body": email_body,
         "to_mail": [user.email],
