@@ -39,7 +39,9 @@ class AllGamesView(generics.ListAPIView):
         game = Game.objects.filter(game_type=id)
         if(game.exists()):
             serializer = self.get_serializer(game, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data=serializer.data
+            data.sort(key=lambda x: x.get('name'))
+            return Response(data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -119,7 +121,9 @@ class AllTeamsView(generics.ListAPIView):
         team = Team.objects.filter(user=request.user)
         if team.exists():
             serializer = self.get_serializer(team, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            data=serializer.data
+            data.sort(key=lambda x: x.get('game'))
+            return Response(data, status=status.HTTP_200_OK)
         else:
             return Response({"error":"No teams found"},status=status.HTTP_404_NOT_FOUND)
     
