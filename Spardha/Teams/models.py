@@ -24,6 +24,18 @@ class Team(models.Model):
             blank=True,
     )
 
+    def college(self):
+        return self.user.institution_name
+    
+    def players_count(self):
+        count=0
+        for player in self.players:
+            if player is not None and player!="":
+                count+=1
+        if self.captain_name is not None and self.captain_name!="":
+            count+=1
+        return count
+
     def __str__(self):
         return (self.game.name+"_"+self.game.game_type+"_" +
                 self.user.institution_name)

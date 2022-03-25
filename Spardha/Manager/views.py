@@ -20,9 +20,9 @@ def user_data():
                     "id": team.id,
                     "name": team.captain_name,
                     "player": ("Captain"),
-                    "institution_name": team.user.institution_name,
+                    "institution_name": team.college(),
                     "game": team.game.name,
-                    "members": len(team.players)+1,
+                    "members": team.players_count(),
                 }
             )
         for player in team.players:
@@ -32,9 +32,9 @@ def user_data():
                         "id": team.id,
                         "name": player,
                         "player": ("Player"),
-                        "institution_name": team.user.institution_name,
+                        "institution_name": team.college(),
                         "game": team.game.name,
-                        "members": len(team.players)+1,
+                        "members": team.players_count(),
                     }
                 )
     return users
@@ -82,9 +82,9 @@ def user_export(request, id,player):
         data = [
             ["Name", player],
             ["Role", ("Captain" if team.captain_name==player else "Player")],
-            ["Institution Name", team.user.institution_name],
+            ["Institution Name", team.college()],
             ["Game", team.game.name],
-            ["Total Members", len(team.players)+1],
+            ["Total Members", team.players_count(),],
         ]
 
         return table_to_response(player.replace(" ", ""), data)
@@ -98,7 +98,7 @@ def game_export(request, id):
         for i in range(1, game.max_players + 1):
             data[0].append("Player " + str(i))
         for team in Team.objects.filter(game=game):
-            arr = [team.user.institution_name, len(team.players)+1, team.captain_name, team.captain_phone]
+            arr = [team.college(), team.players_count(), team.captain_name, team.captain_phone]
             for player in team.players:
                 arr.append(player)
             data.append(arr)
@@ -116,9 +116,9 @@ def all_export(request):
                     [
                         team.captain_name,
                         ("Captain"),
-                        team.user.institution_name,
+                        team.college(),
                         team.game.name,
-                        len(team.players)+1,
+                        team.players_count(),
                     ]
                 )
             for player in team.players:
@@ -127,9 +127,9 @@ def all_export(request):
                         [
                             player,
                             ("Player"),
-                            team.user.institution_name,
+                            team.college(),
                             team.game.name,
-                            len(team.players)+1,
+                            team.players_count(),
                         ]
                     )
         return table_to_response("AllUsers", data)
