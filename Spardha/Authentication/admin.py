@@ -24,4 +24,9 @@ class UserAccountAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(".")
         return super().response_change(request, obj)
 
+    list_display = (
+        '__str__', 'name',  'email', 'phone_no', 'institution_name', 'designation')
+    search_fields = ('username', 'name', 'email', 'institution_name')
+    list_filter = ('is_staff', 'institution_name')
+
 admin.site.register(UserAccount, UserAccountAdmin)
