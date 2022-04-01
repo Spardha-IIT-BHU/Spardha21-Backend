@@ -11,8 +11,8 @@ admin.site.register(Game,GameAdmin)
 class TeamAdmin(admin.ModelAdmin):
     list_display = (
         '__str__','college', 'captain_name', 'captain_phone', 'players_count')
-    search_fields = ('captain_name', 'captain_phone')
-    list_filter = ('game','user')
+    search_fields = ('captain_name', 'user__institution_name')
+    list_filter = ('game',)
 
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super(TeamAdmin, self).get_search_results(request, queryset, search_term)
@@ -29,8 +29,7 @@ admin.site.register(Team,TeamAdmin)
 
 class ContiAdmin(admin.ModelAdmin):
     list_display = (
-        '__str__','leader_name', 'leader_contact_num', 'num_of_officials', 'num_of_boys','num_of_girls')
-    search_fields = ('leader_name',)
-    list_filter = ('college_rep',)
+        '__str__', 'college_rep', 'leader_name', 'leader_contact_num', 'num_of_officials', 'num_of_boys','num_of_girls')
+    search_fields = ('leader_name', 'college_rep__name', 'college_rep__institution_name')
 
 admin.site.register(Contingent,ContiAdmin)
