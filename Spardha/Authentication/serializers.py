@@ -92,7 +92,7 @@ class RegisterSerializer(serializers.Serializer):
         required=True,
         validators=[
             UniqueValidator(
-                queryset=UserAccount.objects.filter(is_deleted=False),
+                queryset=UserAccount.objects.filter(is_active=True, is_deleted=False),
                 message=("A user with this institute already registered. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"),
             )
         ],
