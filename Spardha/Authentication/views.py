@@ -26,7 +26,7 @@ from django.http import Http404
 from Spardha.settings import BASE_URL_FRONTEND
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from scripts.team_registration import UsersSheet
+from scripts.user_registration import UsersSheet
 
 token_param = openapi.Parameter('Authorization', openapi.IN_QUERY,
                                 description="Provide auth token", type=openapi.TYPE_STRING)

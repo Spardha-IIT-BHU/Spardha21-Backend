@@ -8,7 +8,7 @@ from .serializers import (
     ContingentSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
-from scripts.team_registration import UsersSheet
+from scripts.user_registration import UsersSheet
 
 
 class AllGamesView(generics.ListAPIView):
