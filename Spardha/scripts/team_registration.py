@@ -5,6 +5,8 @@ from decouple import config
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from Authentication.models import UserAccount
+from Teams.models import Team, Game, Contingent
 
 bufferSize = 64 * 1024
 password = config('SERVICE_ACCOUNT_DECRYPT_KEY')
@@ -29,10 +31,10 @@ def encrypt_file(filename):
             pyAesCrypt.encryptStream(decrypted_file, encrypted_file, password, bufferSize)
 
 
-class EventsSheet:
+class UsersSheet:
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-    RANGE_NAME = 'Sheet1'
+    RANGE_NAME = 'Registration'
     value_input_option = 'USER_ENTERED'
 
     creds = None
@@ -55,14 +57,60 @@ class EventsSheet:
     sheet = service.spreadsheets()
 
     @classmethod
+    def get_user_row(cls, user):
+        result = cls.service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+        rows = result.get('values', [])
+        for i in  range(len(rows)):
+            if rows[i][1] == user.email:
+                return i+1
+        return len(rows)+2
+
+    @classmethod
+    def get_user_data(cls,user):
+        row=[user.username, user.email, user.name, user.institution_name, user.designation, user.phone_no]
+        try:
+            conti=Contingent.objects.get()
+            row.append(conti.leader_name)
+            row.append(conti.leader_contact_num)
+            row.append(conti.num_of_boys)
+            row.append(conti.num_of_girls)
+            row.append(conti.num_of_officials)
+        except:
+            for i in range(5): row.append("NO DATA")
+        row.append("Yes" if user.is_active else "NO")
+        row.append("Yes" if user.is_deleted else "NO")
+        row.append("Yes" if user.is_admin else "NO")
+        row.append("Yes" if user.is_staff else "NO")
+        return row
+
+    @classmethod
     def initialize_spreadsheet(cls):
-        values = [
-            ["Column 1", "Column 2", "Column 3"],
-            ["."]
-        ]
+        values = []
+        for user in UserAccount.objects.all():
+            values.append(cls.get_user_data(user))
+
         body = {
             'values': values
         }
-        result = cls.service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME).execute()
+        result = cls.service.spreadsheets().values().clear(spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME+"!A2:O10000").execute()
         result = cls.service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME, valueInputOption=cls.value_input_option, body=body).execute()
+
+    @classmethod
+    def update_user(cls, user):
+        row = cls.get_user_row(user)
+        values = [cls.get_user_data(user)]
+        body = {
+            'values': values
+        }
+        result = cls.service.spreadsheets().values().update(spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME+f"!A{row}", valueInputOption=cls.value_input_option, body=body).execute()
+
+    @classmethod
+    def new_user(cls, user):
+        values = [cls.get_user_data(user)]
+        body = {
+            'values': values
+        }
+        result = cls.service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME, valueInputOption=cls.value_input_option, body=body).execute()
+        print(result)

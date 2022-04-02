@@ -8,6 +8,7 @@ from .serializers import (
     ContingentSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
+from scripts.team_registration import UsersSheet
 
 
 class AllGamesView(generics.ListAPIView):
@@ -66,6 +67,7 @@ class ContingentDetailView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        UsersSheet.update_user(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -99,6 +101,7 @@ class ContingentDetailView(generics.GenericAPIView):
         contingent = Contingent.objects.filter(college_rep=request.user)
         if contingent.exists():
             contingent.delete()
+        UsersSheet.update_user(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

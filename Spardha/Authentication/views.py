@@ -26,6 +26,7 @@ from django.http import Http404
 from Spardha.settings import BASE_URL_FRONTEND
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from scripts.team_registration import UsersSheet
 
 token_param = openapi.Parameter('Authorization', openapi.IN_QUERY,
                                 description="Provide auth token", type=openapi.TYPE_STRING)
@@ -242,6 +243,7 @@ class UserUpdateView(generics.GenericAPIView):
                 user.update(
                     institution_name=request.data["institution_name"],
                 )
+            UsersSheet.update_user(user)
             return Response(
                 {"message": "Updated successfully!"}, status=status.HTTP_200_OK
             )
@@ -292,6 +294,7 @@ class RegisterView(generics.GenericAPIView):
             if user is None:
                 user = serializer.save()
                 create_auth_token(user=user)
+                UsersSheet.new_user(user)
                 send_verification_mail(user, request)
                 return Response(
                     {"success": "Verification link has been sent by email!"},
@@ -317,6 +320,7 @@ def ActivateAccount(request, uidb64, token):
     url = BASE_URL_FRONTEND + "/register/login"
     user.is_active = True
     user.save()
+    UsersSheet.update_user(user)
     return redirect(url)
 
 
@@ -383,6 +387,7 @@ class DeleteAccountView(generics.GenericAPIView):
             user.is_active = False
             user.is_deleted = True
             user.save()
+            UsersSheet.update_user(user)
             return Response(
                 {"success": "Account deleted successfully!"}, status=status.HTTP_200_OK
             )
