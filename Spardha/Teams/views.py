@@ -8,6 +8,8 @@ from .serializers import (
     ContingentSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
+from scripts.user_registration import UsersSheet
+from scripts.team_registration import TeamsSheet
 
 
 class AllGamesView(generics.ListAPIView):
@@ -65,8 +67,9 @@ class ContingentDetailView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        contingent=serializer.save()
+        UsersSheet.update_user(contingent.college_rep.email)
+        return Response( status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         responses={
@@ -97,8 +100,10 @@ class ContingentDetailView(generics.GenericAPIView):
     )
     def delete(self, request):
         contingent = Contingent.objects.filter(college_rep=request.user)
+        email=contingent.college_rep.email
         if contingent.exists():
             contingent.delete()
+        UsersSheet.update_user(email)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -137,7 +142,8 @@ class AllTeamsView(generics.ListAPIView):
     def post(self,request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=self.request.user)
+        team=serializer.save(user=self.request.user)
+        TeamsSheet.new_team(team)
         return Response({"success": "Team has been created"}, status=status.HTTP_200_OK)
 
 class TeamView(generics.GenericAPIView):
@@ -152,16 +158,18 @@ class TeamView(generics.GenericAPIView):
     )
     def put(self, request, game):
         game=Game.objects.get(name=game.split('_')[0],game_type=game.split('_')[1])
-        team = Team.objects.filter(game=game, user=request.user)
-        if team.exists():
-            if "captain_name" in request.data:
-                team.update(captain_name=request.data["captain_name"])
-            if "captain_phone" in request.data:
-                team.update(captain_phone=request.data["captain_phone"])
-            if "players" in request.data:
-                team.update(players=request.data["players"])
+        try:
+            team = Team.objects.get(game=game, user=request.user)
+            if "captain_name" in request.data.keys():
+                team.captain_name=request.data["captain_name"]
+            if "captain_phone" in request.data.keys():
+                team.captain_phone=request.data["captain_phone"]
+            if "players" in request.data.keys():
+                team.players=request.data["players"]
+            team.save()
+            TeamsSheet.update_team(team)
             return Response({"success":"Team Details Modified"}, status=status.HTTP_200_OK)
-        else:
+        except:
             return Response({"error":"Team not found"},status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema(
@@ -174,6 +182,7 @@ class TeamView(generics.GenericAPIView):
         game=Game.objects.get(name=game.split('_')[0],game_type=game.split('_')[1])
         team = Team.objects.filter(game=game, user=request.user)
         if team.exists():
+            TeamsSheet.delete_team(team[0])
             team.delete()
             return Response({"success": "Team has been deleted"}, status=status.HTTP_200_OK)
         return Response({"error":"Team not found"},status=status.HTTP_204_NO_CONTENT)

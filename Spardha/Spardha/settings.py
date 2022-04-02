@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import django_heroku
+import pyAesCrypt
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,6 +151,18 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+with open(os.path.join(BASE_DIR, "client_secret.json.aes"), "rb") as encrypted_file:
+    with open(os.path.join(BASE_DIR, "client_secret.json"), "wb") as decrypted_file:
+        encFileSize = os.stat(os.path.join(BASE_DIR, "client_secret.json.aes")).st_size
+        # decrypt file stream
+        pyAesCrypt.decryptStream(
+            encrypted_file,
+            decrypted_file,
+            config('SERVICE_ACCOUNT_DECRYPT_KEY'),
+            64*1024,
+            encFileSize
+        )
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = "smtp.zoho.com"
