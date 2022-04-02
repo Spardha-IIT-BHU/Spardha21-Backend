@@ -7,14 +7,18 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from Authentication.models import UserAccount
 from Teams.models import Team, Game, Contingent
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 bufferSize = 64 * 1024
 password = config('SERVICE_ACCOUNT_DECRYPT_KEY')
 spreadsheet_id = config('SPREADSHEET_ID')
 
 def decrypt_file(filename):
-    with open(f"{filename}.aes", "rb") as encrypted_file:
-        with open(filename, "wb") as decrypted_file:
+    with open(os.path.join(BASE_DIR, f"{filename}.aes"), "rb") as encrypted_file:
+        with open(os.path.join(BASE_DIR, filename), "wb") as decrypted_file:
             encFileSize = os.stat(f"{filename}.aes").st_size
             # decrypt file stream
             pyAesCrypt.decryptStream(
@@ -26,8 +30,8 @@ def decrypt_file(filename):
             )
 
 def encrypt_file(filename):
-    with open(filename, "rb") as decrypted_file:
-        with open(f"{filename}.aes", "wb") as encrypted_file:
+    with open(os.path.join(BASE_DIR, filename), "rb") as decrypted_file:
+        with open(os.path.join(BASE_DIR, f"{filename}.aes"), "wb") as encrypted_file:
             pyAesCrypt.encryptStream(decrypted_file, encrypted_file, password, bufferSize)
 
 
