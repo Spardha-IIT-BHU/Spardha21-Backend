@@ -73,7 +73,7 @@ class UsersSheet:
     def get_user_data(cls,user):
         row=[user.username, user.email, user.name, user.institution_name, user.designation, user.phone_no]
         try:
-            conti=Contingent.objects.get()
+            conti=Contingent.objects.get(college_rep=user)
             row.append(conti.leader_name)
             row.append(conti.leader_contact_num)
             row.append(conti.num_of_boys)
@@ -81,16 +81,16 @@ class UsersSheet:
             row.append(conti.num_of_officials)
         except:
             for i in range(5): row.append("")
-        row.append("Yes" if user.is_active else "NO")
-        row.append("Yes" if user.is_deleted else "NO")
-        row.append("Yes" if user.is_admin else "NO")
-        row.append("Yes" if user.is_staff else "NO")
+        row.append("Yes" if user.is_active else "No")
+        row.append("Yes" if user.is_deleted else "No")
+        row.append("Yes" if user.is_admin else "No")
+        row.append("Yes" if user.is_staff else "No")
         return row
 
     @classmethod
     def initialize_spreadsheet(cls):
         values = []
-        for user in UserAccount.objects.all():
+        for user in UserAccount.objects.all().order_by('id'):
             values.append(cls.get_user_data(user))
 
         body = {

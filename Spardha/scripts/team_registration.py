@@ -136,12 +136,12 @@ class TeamsSheet:
 
     @classmethod
     def initialize_spreadsheet(cls):
-        for game in Game.objects.all():
+        for game in Game.objects.all().order_by('name', 'game_type'):
             values = []
-            cls.RANGE_NAME = team.game.name + "_" + team.game.game_type
+            cls.RANGE_NAME = game.name + "_" + game.game_type
             if cls.get_sheet_id() is None:
                 cls.create_sheet(game)
-            for team in Team.objects.filter(game=game):
+            for team in Team.objects.filter(game=game).order_by('id'):
                 values.append(cls.get_team_data(team))
             body = {"values": values}
             result = (
