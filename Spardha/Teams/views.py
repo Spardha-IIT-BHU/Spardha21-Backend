@@ -100,10 +100,10 @@ class ContingentDetailView(generics.GenericAPIView):
     )
     def delete(self, request):
         contingent = Contingent.objects.filter(college_rep=request.user)
-        email=contingent.college_rep.email
         if contingent.exists():
+            email=contingent[0].college_rep.email
             contingent.delete()
-        UsersSheet.update_user(email)
+            UsersSheet.update_user(email)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -144,6 +144,7 @@ class AllTeamsView(generics.ListAPIView):
         serializer.is_valid(raise_exception=True)
         team=serializer.save(user=self.request.user)
         TeamsSheet.new_team(team)
+        UsersSheet.update_user(team.user.email)
         return Response({"success": "Team has been created"}, status=status.HTTP_200_OK)
 
 class TeamView(generics.GenericAPIView):
@@ -183,6 +184,8 @@ class TeamView(generics.GenericAPIView):
         team = Team.objects.filter(game=game, user=request.user)
         if team.exists():
             TeamsSheet.delete_team(team[0])
+            user_email = team[0].user.email
             team.delete()
+            UsersSheet.update_user(user_email)
             return Response({"success": "Team has been deleted"}, status=status.HTTP_200_OK)
         return Response({"error":"Team not found"},status=status.HTTP_204_NO_CONTENT)

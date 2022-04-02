@@ -81,6 +81,14 @@ class UsersSheet:
             row.append(conti.num_of_officials)
         except:
             for i in range(5): row.append("")
+
+        games = []
+        for team in Team.objects.filter(user=user).select_related('game'):
+            game = team.game
+            games.append(game.name + "_" + game.game_type)
+        games.sort()
+        row.append(", ".join(games))
+
         row.append("Yes" if user.is_active else "No")
         row.append("Yes" if user.is_deleted else "No")
         row.append("Yes" if user.is_admin else "No")
