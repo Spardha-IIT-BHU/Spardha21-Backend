@@ -69,7 +69,6 @@ class ContingentDetailView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         contingent=serializer.save()
         UsersSheet.update_user(contingent.college_rep.email)
-        contingent.delete()
         return Response( status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

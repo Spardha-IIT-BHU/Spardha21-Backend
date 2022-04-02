@@ -19,7 +19,7 @@ spreadsheet_id = config('SPREADSHEET_ID')
 def decrypt_file(filename):
     with open(os.path.join(BASE_DIR, f"{filename}.aes"), "rb") as encrypted_file:
         with open(os.path.join(BASE_DIR, filename), "wb") as decrypted_file:
-            encFileSize = os.stat(f"{filename}.aes").st_size
+            encFileSize = os.stat(os.path.join(BASE_DIR, f"{filename}.aes")).st_size
             # decrypt file stream
             pyAesCrypt.decryptStream(
                 encrypted_file,
@@ -42,18 +42,18 @@ class UsersSheet:
     value_input_option = 'USER_ENTERED'
 
     creds = None
-    if os.path.exists('token.pickle.aes'):
+    if os.path.exists(os.path.join(BASE_DIR, 'token.pickle.aes')):
         decrypt_file('token.pickle')
-        with open('token.pickle', 'rb') as token:
+        with open(os.path.join(BASE_DIR, 'token.pickle'), 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secret.json', SCOPES)
+                os.path.join(BASE_DIR, 'client_secret.json'), SCOPES)
             creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
+        with open(os.path.join(BASE_DIR, 'token.pickle'), 'wb') as token:
             pickle.dump(creds, token)
         encrypt_file('token.pickle')
     
