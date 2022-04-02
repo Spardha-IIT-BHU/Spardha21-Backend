@@ -152,9 +152,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-with open("client_secret.json.aes", "rb") as encrypted_file:
-    with open("client_secret.json", "wb") as decrypted_file:
-        encFileSize = os.stat("client_secret.json.aes").st_size
+with open(os.path.join(BASE_DIR, "client_secret.json.aes"), "rb") as encrypted_file:
+    with open(os.path.join(BASE_DIR, "client_secret.json"), "wb") as decrypted_file:
+        encFileSize = os.stat(os.path.join(BASE_DIR, "client_secret.json.aes")).st_size
         # decrypt file stream
         pyAesCrypt.decryptStream(
             encrypted_file,
