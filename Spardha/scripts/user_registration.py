@@ -58,12 +58,12 @@ class UsersSheet:
 
     @classmethod
     def get_user_row(cls, user):
-        result = cls.service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+        result = cls.sheet.values().get(spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME).execute()
         rows = result.get('values', [])
         for i in  range(len(rows)):
             if rows[i][1] == user.email:
                 return i+1
-        return len(rows)+2
+        return len(rows)+1
 
     @classmethod
     def get_user_data(cls,user):
@@ -76,7 +76,7 @@ class UsersSheet:
             row.append(conti.num_of_girls)
             row.append(conti.num_of_officials)
         except:
-            for i in range(5): row.append("NO DATA")
+            for i in range(5): row.append("")
         row.append("Yes" if user.is_active else "NO")
         row.append("Yes" if user.is_deleted else "NO")
         row.append("Yes" if user.is_admin else "NO")
@@ -97,7 +97,8 @@ class UsersSheet:
             spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME, valueInputOption=cls.value_input_option, body=body).execute()
 
     @classmethod
-    def update_user(cls, user):
+    def update_user(cls, email):
+        user=UserAccount.objects.get(email=email)
         row = cls.get_user_row(user)
         values = [cls.get_user_data(user)]
         body = {
@@ -113,4 +114,3 @@ class UsersSheet:
         }
         result = cls.service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id, range=cls.RANGE_NAME, valueInputOption=cls.value_input_option, body=body).execute()
-        print(result)

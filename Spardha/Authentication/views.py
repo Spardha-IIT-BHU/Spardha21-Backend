@@ -243,7 +243,7 @@ class UserUpdateView(generics.GenericAPIView):
                 user.update(
                     institution_name=request.data["institution_name"],
                 )
-            UsersSheet.update_user(user)
+            UsersSheet.update_user(user.email)
             return Response(
                 {"message": "Updated successfully!"}, status=status.HTTP_200_OK
             )
@@ -320,7 +320,7 @@ def ActivateAccount(request, uidb64, token):
     url = BASE_URL_FRONTEND + "/register/login"
     user.is_active = True
     user.save()
-    UsersSheet.update_user(user)
+    UsersSheet.update_user(user.email)
     return redirect(url)
 
 
@@ -387,7 +387,7 @@ class DeleteAccountView(generics.GenericAPIView):
             user.is_active = False
             user.is_deleted = True
             user.save()
-            UsersSheet.update_user(user)
+            UsersSheet.update_user(user.email)
             return Response(
                 {"success": "Account deleted successfully!"}, status=status.HTTP_200_OK
             )
