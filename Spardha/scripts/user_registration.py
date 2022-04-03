@@ -91,8 +91,6 @@ class UsersSheet:
 
         row.append("Yes" if user.is_active else "No")
         row.append("Yes" if user.is_deleted else "No")
-        row.append("Yes" if user.is_admin else "No")
-        row.append("Yes" if user.is_staff else "No")
         return row
 
     @classmethod
