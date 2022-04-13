@@ -19,7 +19,7 @@ spreadsheet_id = config('SPREADSHEET_ID')
 def decrypt_file(filename):
     with open(os.path.join(BASE_DIR, f"{filename}.aes"), "rb") as encrypted_file:
         with open(os.path.join(BASE_DIR, filename), "wb") as decrypted_file:
-            encFileSize = os.stat(f"{filename}.aes").st_size
+            encFileSize = os.stat(os.path.join(BASE_DIR, f"{filename}.aes")).st_size
             # decrypt file stream
             pyAesCrypt.decryptStream(
                 encrypted_file,
@@ -42,18 +42,18 @@ class UsersSheet:
     value_input_option = 'USER_ENTERED'
 
     creds = None
-    if os.path.exists('token.pickle.aes'):
+    if os.path.exists(os.path.join(BASE_DIR, 'token.pickle.aes')):
         decrypt_file('token.pickle')
-        with open('token.pickle', 'rb') as token:
+        with open(os.path.join(BASE_DIR, 'token.pickle'), 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secret.json', SCOPES)
+                os.path.join(BASE_DIR, 'client_secret.json'), SCOPES)
             creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
+        with open(os.path.join(BASE_DIR, 'token.pickle'), 'wb') as token:
             pickle.dump(creds, token)
         encrypt_file('token.pickle')
     
@@ -73,7 +73,7 @@ class UsersSheet:
     def get_user_data(cls,user):
         row=[user.username, user.email, user.name, user.institution_name, user.designation, user.phone_no]
         try:
-            conti=Contingent.objects.get()
+            conti=Contingent.objects.get(college_rep=user)
             row.append(conti.leader_name)
             row.append(conti.leader_contact_num)
             row.append(conti.num_of_boys)
@@ -81,16 +81,22 @@ class UsersSheet:
             row.append(conti.num_of_officials)
         except:
             for i in range(5): row.append("")
-        row.append("Yes" if user.is_active else "NO")
-        row.append("Yes" if user.is_deleted else "NO")
-        row.append("Yes" if user.is_admin else "NO")
-        row.append("Yes" if user.is_staff else "NO")
+
+        games = []
+        for team in Team.objects.filter(user=user).select_related('game'):
+            game = team.game
+            games.append(game.name + "_" + game.game_type)
+        games.sort()
+        row.append(", ".join(games))
+
+        row.append("Yes" if user.is_active else "No")
+        row.append("Yes" if user.is_deleted else "No")
         return row
 
     @classmethod
     def initialize_spreadsheet(cls):
         values = []
-        for user in UserAccount.objects.all():
+        for user in UserAccount.objects.all().order_by('id'):
             values.append(cls.get_user_data(user))
 
         body = {
