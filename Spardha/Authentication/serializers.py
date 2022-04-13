@@ -90,12 +90,6 @@ class RegisterSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     institution_name = serializers.CharField(
         required=True,
-        validators=[
-            UniqueValidator(
-                queryset=UserAccount.objects.filter(is_deleted=False),
-                message=("A user with this institute already registered. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"),
-            )
-        ],
     )
     designation = serializers.CharField(required=True)
     phone_no = serializers.CharField(required=True, validators=[check_mobile_number])
